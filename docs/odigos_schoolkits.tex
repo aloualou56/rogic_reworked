@@ -1,0 +1,1450 @@
+% =====================================================================
+%  Οδηγός του schoolKits.h — γράφω C για το ρομπότ μου, εξηγημένο απλά
+%  Μεταγλώττιση:  xelatex odigos_schoolkits.tex   (δύο φορές, για τα περιεχόμενα)
+% =====================================================================
+\documentclass[11pt,a4paper]{article}
+
+% ---------- γλώσσα και γραμματοσειρές ----------
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{greek}
+\setotherlanguage{english}
+\setmainfont{Inter}[Scale=0.95]
+\setsansfont{Inter}[Scale=0.95]
+\setmonofont{DejaVu Sans Mono}[Scale=0.86]
+\newfontfamily\greekfont{Inter}[Scale=0.95]
+\newfontfamily\greekfontsf{Inter}[Scale=0.95]
+\newfontfamily\greekfonttt{DejaVu Sans Mono}[Scale=0.86]
+
+% ---------- σελίδα ----------
+\usepackage[a4paper,margin=2.1cm,top=2.3cm,bottom=2.3cm]{geometry}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{array,tabularx,booktabs,longtable}
+\usepackage{multicol}
+\usepackage{tikz}
+\usetikzlibrary{positioning,decorations.pathreplacing}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{needspace}
+\usepackage[hidelinks]{hyperref}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\linespread{1.12}
+\setlist{itemsep=2pt,topsep=3pt}
+
+% ---------- χρώματα ----------
+\definecolor{robBlue}{HTML}{1E6FD9}
+\definecolor{robOrange}{HTML}{EE7F1B}
+\definecolor{robGreen}{HTML}{23965A}
+\definecolor{robRed}{HTML}{D23C3C}
+\definecolor{robPurple}{HTML}{7A4FC9}
+\definecolor{robTeal}{HTML}{14919B}
+\definecolor{robGray}{HTML}{5B6573}
+\definecolor{codeBg}{HTML}{F4F6FA}
+
+% ---------- επικεφαλίδες ----------
+\titleformat{\section}{\Large\bfseries\color{robBlue}}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{robGray}}{\thesubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+\titlespacing*{\subsection}{0pt}{10pt}{4pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\normalfont\small\color{robGray}Μαθαίνω C με το ρομπότ μου}
+\fancyhead[R]{\normalfont\small\color{robGray}\texttt{schoolKits.h}}
+\fancyfoot[C]{\normalfont\small\color{robGray}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ---------- κώδικας ----------
+\lstset{
+  language=C,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{robBlue}\bfseries,
+  commentstyle=\color{robGreen}\itshape,
+  stringstyle=\color{robOrange},
+  backgroundcolor=\color{codeBg},
+  frame=single, framerule=0pt, framesep=6pt,
+  xleftmargin=6pt, xrightmargin=6pt,
+  columns=fullflexible, keepspaces=true,
+  showstringspaces=false, extendedchars=true,
+  texcl=true,
+  escapeinside={(*@}{@*)},   % για το παράδειγμα με το σχόλιο /* ... */   % τα σχόλια // γράφονται ως κείμενο LaTeX, ώστε τα ελληνικά να βγαίνουν σωστά
+  aboveskip=6pt, belowskip=6pt,
+  morekeywords={start,end,delay,sleep,delayMs,motor,motor1,motor2,motor3,motor4,wheel12,wheel34,
+    motorspeed,servo1,servo2,servo3,servo4,servo5,on,off,voice,ledonoff,setSegment,setOut,
+    resetTime,getTime,setUserTimer,getUserTimer,timerstart,timerend,timecounter,getRemocon,
+    setRemoconPort,getIn,clearOut,sendString,uprintf},
+}
+% Ο κώδικας είναι πάντα σε γραμματοσειρά σταθερού πλάτους, αλλά με τα ελληνικά το listings δεν το
+% καταλαβαίνει και τυπώνει το - και το * ως μαθηματικά σύμβολα (− και ∗). Τότε ο κώδικας που αντιγράφεται
+% από το PDF δεν μεταγλωττίζεται. Αυτό το κάνει να τυπώνει πάντα τους κανονικούς χαρακτήρες.
+\makeatletter
+\def\lst@ttfamily#1#2{#1}
+\makeatother
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+
+% ---------- κουτιά ----------
+% Κάρτα συνάρτησης: \begin{fcard}{χρώμα}{υπογραφή} ... \end{fcard}
+\newenvironment{fcard}[2]{%
+  \begin{tcolorbox}[enhanced, colback=#1!4, colframe=#1!80!black,
+    boxrule=0.9pt, arc=3mm, left=8pt, right=8pt, top=4pt, bottom=4pt,
+    fonttitle=\bfseries\ttfamily, coltitle=white, colbacktitle=#1!85!black,
+    title={\detokenize{#2}}, before skip=8pt, after skip=8pt]}
+  {\end{tcolorbox}}
+
+\newcommand{\what}{\par\textbf{\color{robBlue}Τι κάνει:}\ }
+\newcommand{\inside}{\par\textbf{\color{robOrange}Τι γράφεις μέσα στις παρενθέσεις:}\ }
+\newcommand{\gives}{\par\textbf{\color{robTeal}Τι σου δίνει πίσω:}\ }
+\newcommand{\example}{\par\textbf{\color{robGreen}Παράδειγμα:}}
+
+\newtcolorbox{tip}{enhanced, breakable, colback=robGreen!7, colframe=robGreen!70!black,
+  boxrule=0.6pt, arc=2mm, left=8pt, right=8pt, top=4pt, bottom=4pt,
+  title={Συμβουλή}, fonttitle=\bfseries, coltitle=white, colbacktitle=robGreen!80!black,
+  before skip=6pt, after skip=6pt}
+\newtcolorbox{careful}{enhanced, breakable, colback=robRed!6, colframe=robRed!75!black,
+  boxrule=0.6pt, arc=2mm, left=8pt, right=8pt, top=4pt, bottom=4pt,
+  title={Προσοχή!}, fonttitle=\bfseries, coltitle=white, colbacktitle=robRed!80!black,
+  before skip=6pt, after skip=6pt}
+
+% Πρόκληση στο τέλος κάθε μαθήματος (αριθμείται μόνη της)
+\newcounter{prok}
+\newtcolorbox{challenge}{enhanced, breakable, colback=robOrange!7, colframe=robOrange!85!black,
+  boxrule=0.6pt, arc=2mm, left=8pt, right=8pt, top=4pt, bottom=4pt,
+  code={\refstepcounter{prok}}, title={Πρόκληση \theprok}, fonttitle=\bfseries, coltitle=white,
+  colbacktitle=robOrange!90!black, before skip=8pt, after skip=8pt}
+
+% Σελίδα αρχής για κάθε μέρος: \meros[χρώμα]{γράμμα}{τίτλος}{υπότιτλος}
+\newcommand{\meros}[4][robBlue]{%
+  \clearpage
+  \phantomsection\addcontentsline{toc}{part}{Μέρος #2: #3}%
+  \begin{tcolorbox}[enhanced, colback=#1!90!black, colframe=#1!90!black, arc=4mm,
+    left=14pt, right=14pt, top=12pt, bottom=12pt, before skip=0pt, after skip=14pt]
+  {\color{white!80!#1}\large\bfseries ΜΕΡΟΣ #2}\par\vspace{2pt}
+  {\color{white}\fontsize{28}{32}\selectfont\bfseries #3}\par\vspace{4pt}
+  {\color{white!85!#1}\large #4}
+  \end{tcolorbox}}
+
+% Ένας πίνακας «τιμή -> τι γίνεται»
+\newenvironment{values}{\par\smallskip\tabularx{\linewidth}{>{\ttfamily}l X}\toprule}{\bottomrule\endtabularx\par\smallskip}
+
+% =====================================================================
+\begin{document}
+
+% ------------------------------ εξώφυλλο ------------------------------
+\begin{titlepage}
+\centering
+\vspace*{1.2cm}
+{\fontsize{44}{50}\selectfont\bfseries\color{robBlue} Μαθαίνω C\par}
+\vspace{0.2cm}
+{\fontsize{26}{32}\selectfont\bfseries\color{robOrange} με το ρομπότ μου\par}
+\vspace{0.6cm}
+{\Large\color{robGray} και όλες οι εντολές του \texttt{schoolKits.h}\par}
+{\Large\color{robGray} — εξηγημένα απλά —\par}
+\vspace{1.2cm}
+
+\begin{tikzpicture}[scale=1.15, line width=1.2pt]
+  % κεραία
+  \draw[robGray] (0,2.55) -- (0,3.05);
+  \fill[robOrange] (0,3.15) circle (0.13);
+  % κεφάλι
+  \fill[robBlue!85] (-1.05,1.45) rectangle (1.05,2.55);
+  \draw[robBlue!60!black] (-1.05,1.45) rectangle (1.05,2.55);
+  \fill[white] (-0.45,2.02) circle (0.24); \fill[white] (0.45,2.02) circle (0.24);
+  \fill[black] (-0.40,2.0) circle (0.11); \fill[black] (0.50,2.0) circle (0.11);
+  \draw[white, line width=1.6pt] (-0.35,1.68) .. controls (0,1.52) .. (0.35,1.68);
+  % σώμα
+  \fill[robTeal!80] (-1.45,-0.35) rectangle (1.45,1.3);
+  \draw[robTeal!50!black] (-1.45,-0.35) rectangle (1.45,1.3);
+  \fill[white] (-0.95,0.35) rectangle (0.95,1.0);
+  \node[font=\ttfamily\bfseries\small, robBlue] at (0,0.67) {start();};
+  \fill[robOrange] (-0.6,0.0) circle (0.12); \fill[robGreen] (-0.2,0.0) circle (0.12);
+  \fill[robRed] (0.2,0.0) circle (0.12); \fill[robPurple] (0.6,0.0) circle (0.12);
+  % χέρια
+  \draw[robGray, line width=3pt] (-1.45,0.9) -- (-2.05,0.35);
+  \draw[robGray, line width=3pt] (1.45,0.9) -- (2.05,1.45);
+  % ρόδες
+  \fill[robGray!90!black] (-1.0,-0.62) circle (0.42); \fill[white] (-1.0,-0.62) circle (0.14);
+  \fill[robGray!90!black] (1.0,-0.62) circle (0.42);  \fill[white] (1.0,-0.62) circle (0.14);
+\end{tikzpicture}
+
+\vfill
+\begin{tcolorbox}[colback=robBlue!5, colframe=robBlue!60, arc=3mm, width=0.86\textwidth, boxrule=0.7pt]
+\centering
+Στο πρώτο μέρος μαθαίνεις τη γλώσσα \textbf{C}, βήμα βήμα, δοκιμάζοντας κάθε τι καινούργιο
+πάνω στο ρομπότ σου. Στο δεύτερο θα βρεις \textbf{όλες τις εντολές} που καταλαβαίνει το ρομπότ:
+\textbf{τι κάνει} η καθεμία, \textbf{τι γράφεις μέσα} στις παρενθέσεις και \textbf{ποιους αριθμούς}
+επιτρέπεται να βάλεις.
+\end{tcolorbox}
+\vspace{0.6cm}
+{\small\color{robGray} Για το ρομπότ με τον εγκέφαλο ATmega8 και το πρόγραμμα Rogic\par}
+\end{titlepage}
+
+% ------------------------------ περιεχόμενα ------------------------------
+\setcounter{tocdepth}{1}
+{\hypersetup{linkcolor=black}\tableofcontents}
+\newpage
+
+% =====================================================================
+\section*{Πώς είναι φτιαγμένο αυτό το βιβλίο}
+\addcontentsline{toc}{section}{Πώς είναι φτιαγμένο αυτό το βιβλίο}
+
+Το ρομπότ σου δεν καταλαβαίνει ελληνικά ούτε αγγλικά. Καταλαβαίνει μια γλώσσα προγραμματισμού που
+λέγεται \textbf{C}. Σε αυτό το βιβλίο θα τη μάθεις βήμα βήμα, και κάθε τι καινούργιο θα το δοκιμάζεις
+αμέσως πάνω στο ρομπότ σου.
+
+\begin{itemize}[leftmargin=1.4em, itemsep=4pt]
+  \item \textbf{\color{robBlue}Μέρος Α – Μαθαίνω C.} Μικρά μαθήματα, το ένα μετά το άλλο: τι είναι πρόγραμμα,
+        μεταβλητές, ερωτήσεις, επαναλήψεις, δικές σου εντολές. Στο τέλος κάθε μαθήματος υπάρχει μια
+        \textbf{\color{robOrange}Πρόκληση} για να δοκιμάσεις μόνος σου.
+  \item \textbf{\color{robTeal}Μέρος Β – Το λεξικό του ρομπότ.} Όλες οι εντολές που ξέρει το ρομπότ
+        (μοτέρ, σέρβο, LED, αισθητήρες...), η καθεμία με τη δική της κάρτα.
+  \item \textbf{\color{robPurple}Μέρος Γ – Βοήθεια.} Τα πιο συνηθισμένα λάθη, ολόκληρα προγράμματα,
+        ένας πίνακας με όλα με μια ματιά και οι \textbf{λύσεις} των προκλήσεων. Δοκίμασε πρώτα μόνος σου
+        και κοίτα τη λύση μόνο αν κολλήσεις!
+\end{itemize}
+
+\subsection*{Πού γράφω τον κώδικα;}
+Στο Rogic, κάνε δεξί κλικ στο παράθυρο με τα μπλοκ και διάλεξε \textbf{«Άνοιγμα RogicEditor»}. Στη λίστα
+πάνω αριστερά διάλεξε \textbf{Editor}, για να μπορείς να γράφεις. Γράψε το πρόγραμμα και πάτα
+\textbf{Download (F8)}. Το Rogic κάνει τρία πράγματα, το ένα μετά το άλλο:
+\begin{enumerate}[leftmargin=1.6em]
+  \item \textbf{ελέγχει} τον κώδικα· αν βρει λάθος, σου δείχνει σε ποια γραμμή είναι,
+  \item τον \textbf{μετατρέπει σε μπλοκ}, που τα βλέπεις αμέσως στο παράθυρο του Rogic,
+  \item \textbf{στέλνει} τα μπλοκ στο ρομπότ με το καλώδιο.
+\end{enumerate}
+Με το κουμπί \textbf{Change to blocks} βλέπεις τα μπλοκ χωρίς να τα στείλεις.
+
+\begin{tip}
+Οι εντολές του ρομπότ είναι γραμμένες σε ένα αρχείο που λέγεται \texttt{schoolKits.h}. Είναι σαν
+\textbf{λεξικό}: μέσα έχει όλες τις λέξεις που καταλαβαίνει το ρομπότ. Το βρίσκεις στον φάκελο του Rogic,
+στον υποφάκελο \texttt{Lib}, και μπορείς να το δεις και στον επεξεργαστή κώδικα, στην καρτέλα
+\texttt{schoolkits.h}.
+\end{tip}
+
+% =====================================================================
+\meros{Α}{Μαθαίνω C}{Μικρά μαθήματα με το ρομπότ μου}
+
+% =====================================================================
+\section{Τι είναι ένα πρόγραμμα;}
+
+Ένα πρόγραμμα είναι σαν μια \textbf{συνταγή μαγειρικής}: μια λίστα με βήματα. Το ρομπότ τα κάνει
+\textbf{ένα ένα, με τη σειρά, από πάνω προς τα κάτω}. Διαβάζει μια γραμμή, την κάνει και πάει στην επόμενη.
+
+\begin{lstlisting}
+on(OUT1);      // βήμα 1: άναψε το LED της εξόδου 1
+delay(1000);   // βήμα 2: περίμενε 1 δευτερόλεπτο
+off(OUT1);     // βήμα 3: σβήσε το LED
+\end{lstlisting}
+
+Κάθε τέτοια γραμμή είναι μια \textbf{εντολή}. Το ρομπότ δεν σκέφτεται μόνο του: κάνει \textbf{ακριβώς}
+ό,τι γράψεις, ούτε περισσότερα ούτε λιγότερα. Αν ξεχάσεις το \code{delay(1000);}, το LED θα ανάψει και θα
+σβήσει τόσο γρήγορα που δεν θα το δεις καν!
+
+\subsection*{Πώς γράφεται μια εντολή}
+\begin{center}
+\begin{tikzpicture}[font=\ttfamily\LARGE]
+  \node[inner sep=1pt] (n) at (0,0) {wheel12};
+  \node[inner sep=1pt, anchor=west] (p) at (2.6,0) {(10, 10)};
+  \node[inner sep=1pt, anchor=west] (s) at (7.2,0) {;};
+  \draw[robBlue, thick, decorate, decoration={brace, amplitude=5pt, mirror}]
+     ([yshift=-3pt]n.south west) -- ([yshift=-3pt]n.south east)
+     node[midway, below=8pt, font=\small\rmfamily, align=center, text=robBlue, text width=2.6cm] {το όνομα\\της εντολής};
+  \draw[robOrange, thick, decorate, decoration={brace, amplitude=5pt, mirror}]
+     ([yshift=-3pt]p.south west) -- ([yshift=-3pt]p.south east)
+     node[midway, below=8pt, font=\small\rmfamily, align=center, text=robOrange, text width=3.2cm] {τι του λες\\(χωρίζονται με κόμμα)};
+  \draw[robRed, thick, <-] ([yshift=-3pt]s.south) -- ++(0,-0.75)
+     node[below, font=\small\rmfamily, align=center, text=robRed, text width=2.4cm] {η «τελεία»\\της εντολής};
+\end{tikzpicture}
+\end{center}
+
+\begin{itemize}[leftmargin=1.4em]
+  \item Στις \textbf{παρενθέσεις} \code{( )} λες στην εντολή \emph{πόσο} ή \emph{ποιο}.
+        Αν δεν θέλει τίποτα, γράφεις άδειες παρενθέσεις: \code{start();}
+  \item Το \textbf{ερωτηματικό} \code{;} μπαίνει στο τέλος κάθε εντολής, όπως η τελεία στο τέλος μιας πρότασης.
+  \item Τα \textbf{άγκιστρα} \code{{ }} μαζεύουν πολλές εντολές μαζί, σαν κουτί. Θα τα δεις σε λίγο.
+\end{itemize}
+
+\subsection*{Σχόλια: σημειώσεις για σένα}
+Ό,τι γράψεις μετά από \code{//} μέχρι το τέλος της γραμμής είναι \textbf{σχόλιο}. Το ρομπότ το αγνοεί.
+Τα σχόλια είναι για να θυμάσαι εσύ (και να καταλαβαίνουν οι άλλοι) τι κάνει ο κώδικας.
+Για σχόλιο σε πολλές γραμμές, το ξεκινάς με \code{/*} και το τελειώνεις με \code{*/}.
+
+\begin{lstlisting}
+delay(500);   // αυτό είναι σχόλιο σε μία γραμμή
+
+(*@\textcolor{robGreen}{\itshape /* αυτό είναι σχόλιο}@*)
+(*@\textcolor{robGreen}{\itshape \ \ \ σε πολλές γραμμές */}@*)
+\end{lstlisting}
+
+\begin{careful}
+\begin{itemize}[leftmargin=1.2em]
+  \item Τα \textbf{κεφαλαία και τα μικρά} μετράνε: \code{delay} δεν είναι το ίδιο με \code{Delay} ή \code{DELAY}.
+  \item Γράφε τον κώδικα με το πληκτρολόγιο \textbf{στα αγγλικά}. Ελληνικά επιτρέπονται μόνο μέσα στα σχόλια.
+  \item Τα κενά και οι αλλαγές γραμμής δεν πειράζουν το ρομπότ. Τα βάζουμε για να διαβάζεται εύκολα ο κώδικας.
+\end{itemize}
+\end{careful}
+
+% =====================================================================
+\section{Ο σκελετός κάθε προγράμματος}
+
+Κάθε πρόγραμμα για το ρομπότ έχει πάντα αυτό το σχήμα. Οι δικές σου εντολές μπαίνουν στη μέση:
+
+\Needspace*{13\baselineskip}
+\begin{lstlisting}
+#include "schoolkits.h"   // φέρε το λεξικό του ρομπότ
+
+int main(void)            // εδώ ξεκινάει το πρόγραμμα
+{
+    start();              // ξύπνα το ρομπότ
+
+    // ... εδώ γράφεις τις δικές σου εντολές ...
+
+    end();                // σβήσε τα πάντα και σταμάτα
+    return 0;             // «τελείωσα»
+}
+\end{lstlisting}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{>{\raggedright\ttfamily}p{0.3\textwidth} X}
+\toprule
+\textrm{\textbf{Γραμμή}} & \textbf{Τι σημαίνει}\\
+\midrule
+\#include "schoolkits.h" & Φέρνει το λεξικό με τις εντολές του ρομπότ. Χωρίς αυτό, το ρομπότ δεν ξέρει τι είναι το \code{delay} ή το \code{on}.\\
+int main(void) & Εδώ ξεκινάει το πρόγραμμα. Κάθε πρόγραμμα έχει \textbf{ένα} \code{main}.\\
+\{ \ \ \ \} & Το «κουτί» του \code{main}. Ό,τι είναι μέσα, ανήκει στο πρόγραμμα.\\
+start(); & Ξυπνάει το ρομπότ. Είναι πάντα η πρώτη εντολή.\\
+end(); & Σβήνει μοτέρ και εξόδους και σταματάει το πρόγραμμα.\\
+return 0; & Η τελευταία γραμμή του \code{main}. Σημαίνει «τελείωσα».\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{tip}
+Πρόσεξε ότι οι γραμμές μέσα στο κουτί είναι λίγο πιο μέσα (με 4 κενά). Λέγεται \textbf{εσοχή} και
+δείχνει με μια ματιά τι είναι μέσα σε τι. Το ρομπότ δεν τη χρειάζεται, αλλά εσύ ναι!
+\end{tip}
+
+\begin{challenge}
+Γράψε ένα ολόκληρο πρόγραμμα (με τον σκελετό) που ανάβει το LED της \code{OUT1} για 2 δευτερόλεπτα
+και μετά το σβήνει.
+\end{challenge}
+
+% =====================================================================
+\section{Μεταβλητές: κουτάκια για αριθμούς}
+
+Μια \textbf{μεταβλητή} είναι ένα \textbf{κουτάκι με όνομα}. Μέσα του κρατάς έναν αριθμό, και μπορείς να τον
+αλλάζεις όποτε θέλεις.
+
+\begin{center}
+\begin{tikzpicture}
+  \draw[robOrange, very thick, fill=robOrange!10, rounded corners=2pt] (0,0) rectangle (2.2,1.2);
+  \node[font=\ttfamily\huge\bfseries] at (1.1,0.6) {10};
+  \node[font=\ttfamily\large, robOrange!80!black, above] at (1.1,1.25) {taxytita};
+  \node[font=\small, align=left, anchor=west] at (2.7,0.6) {ένα κουτάκι με όνομα \texttt{taxytita}\\που έχει μέσα τον αριθμό \texttt{10}};
+\end{tikzpicture}
+\end{center}
+
+\begin{lstlisting}
+int taxytita = 10;              // φτιάξε το κουτάκι taxytita και βάλε μέσα 10
+wheel12(taxytita, taxytita);    // το ρομπότ κοιτάει τι έχει το κουτάκι: 10
+\end{lstlisting}
+
+\begin{itemize}[leftmargin=1.4em]
+  \item Το \code{int} λέει τι \textbf{είδος} κουτάκι φτιάχνεις: ένα κουτάκι για \textbf{ακέραιους} αριθμούς.
+  \item Το \code{taxytita} είναι το \textbf{όνομα} του κουτιού. Το διαλέγεις εσύ.
+  \item Το \code{=} σημαίνει «\textbf{βάλε μέσα}». Στη C \textbf{δεν} σημαίνει «ίσον»!
+\end{itemize}
+
+Αφού φτιάξεις το κουτάκι, μπορείς να του βάλεις άλλον αριθμό. Τώρα \textbf{χωρίς} το \code{int}, γιατί το
+κουτάκι υπάρχει ήδη:
+
+\begin{lstlisting}
+taxytita = 15;                  // πέτα το 10 και βάλε μέσα 15
+wheel12(taxytita, taxytita);    // τώρα πηγαίνει με 15
+\end{lstlisting}
+
+\subsection*{Γιατί να χρησιμοποιήσω μεταβλητή;}
+Φαντάσου ένα πρόγραμμα όπου η ταχύτητα \code{10} είναι γραμμένη σε 20 σημεία. Για να την αλλάξεις, πρέπει να
+βρεις και τα 20. Με μια μεταβλητή την αλλάζεις \textbf{σε ένα μόνο σημείο}. Και, όπως θα δεις σε λίγο, μια
+μεταβλητή μπορεί να \textbf{μετράει}: πόσες φορές πατήθηκε ένα κουμπί, πόσες φορές αναβόσβησε ένα LED.
+
+\subsection*{Κανόνες για τα ονόματα}
+\begin{center}
+\begin{tabular}{l l}
+\toprule
+\textbf{\color{robGreen}Σωστά ονόματα} & \textbf{\color{robRed}Λάθος ονόματα}\\
+\midrule
+\code{taxytita} & \code{ταχύτητα} \quad (ελληνικά γράμματα)\\
+\code{xronos_strofis} & \code{xronos strofis} \quad (κενό)\\
+\code{fores2} & \code{2fores} \quad (ξεκινάει με αριθμό)\\
+\code{metritis} & \code{while} \quad (λέξη της C)\\
+\bottomrule
+\end{tabular}
+\end{center}
+Χρησιμοποίησε λατινικά γράμματα, αριθμούς και την κάτω παύλα \code{_}. Και θυμήσου: το \code{Taxytita}
+και το \code{taxytita} είναι \textbf{δύο διαφορετικά} κουτάκια.
+
+\subsection*{Τι αριθμούς χωράει ένα κουτάκι}
+Για το ρομπότ σου γράφε πάντα \code{int}, και θυμήσου δύο κανόνες:
+\begin{enumerate}[leftmargin=1.4em, itemsep=3pt]
+  \item Μια μεταβλητή που \textbf{αλλάζει ενώ τρέχει το πρόγραμμα} (π.χ. ένας μετρητής μέσα σε επανάληψη,
+        ή μια μεταβλητή που αλλάζει μέσα σε \code{if}) χωράει μόνο ακέραιους \textbf{από 0 έως 255}.
+        Χωρίς αρνητικούς!
+  \item Ο χρόνος στο \code{delay}, η ταχύτητα των μοτέρ και η θέση του σέρβο πρέπει να είναι αριθμοί που
+        \textbf{ξέρει το Rogic πριν τρέξει το πρόγραμμα}: σκέτος αριθμός, ή μεταβλητή που \emph{δεν} αλλάζει
+        μέσα σε επανάληψη ή σε \code{if}, όπως η \code{taxytita} παραπάνω.
+\end{enumerate}
+\begin{tip}
+Γιατί; Το Rogic μετατρέπει τον κώδικά σου σε \textbf{μπλοκ} για να τον στείλει στο ρομπότ, και τα μπλοκ έχουν
+αυτούς τους κανόνες. Αν κάτι δεν ταιριάζει, το Rogic σού το λέει και σου δείχνει τη γραμμή.
+\end{tip}
+
+\begin{challenge}
+Φτιάξε μια μεταβλητή \code{xronos} με τιμή 2000. Βάλε το ρομπότ να πάει μπροστά για \code{xronos} χιλιοστά
+(με \code{wheel12} και \code{delay(xronos)}) και μετά να σταματήσει. Μετά άλλαξε μόνο τον αριθμό στη μεταβλητή
+και δες τι γίνεται.
+\end{challenge}
+
+% =====================================================================
+\section{Λογαριασμοί}
+
+Το ρομπότ είναι πολύ καλό στους λογαριασμούς. Αυτά είναι τα σύμβολα:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{c l >{\ttfamily}l l}
+\toprule
+\textbf{Σύμβολο} & \textbf{Πράξη} & \textrm{\textbf{Παράδειγμα}} & \textbf{Αποτέλεσμα}\\
+\midrule
+\texttt{+} & πρόσθεση      & 7 + 2 & 9\\
+\texttt{-} & αφαίρεση      & 7 - 2 & 5\\
+\texttt{*} & πολλαπλασιασμός & 7 * 2 & 14\\
+\texttt{/} & διαίρεση      & 7 / 2 & \textbf{3} (όχι 3,5!)\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{careful}
+Η διαίρεση με \code{int} \textbf{πετάει τα δεκαδικά}: το \code{7 / 2} κάνει \code{3} και το \code{1 / 2} κάνει
+\code{0}.
+\end{careful}
+
+\subsection*{Αλλάζω μια μεταβλητή με λογαριασμό}
+\begin{lstlisting}
+int taxytita = 5;
+taxytita = taxytita + 3;   // πάρε ό,τι έχει (5), πρόσθεσε 3, ξαναβάλ' το μέσα: τώρα έχει 8
+wheel12(taxytita, taxytita);
+\end{lstlisting}
+Το \code{taxytita = taxytita + 3;} σε μαθηματικά θα ήταν λάθος, αλλά στη C σημαίνει: «υπολόγισε το δεξί
+μέρος και \textbf{βάλε} το αποτέλεσμα στο κουτάκι αριστερά».
+
+Επειδή τέτοια πράγματα τα γράφουμε συνέχεια, υπάρχουν και συντομεύσεις:
+\begin{center}
+\begin{tabular}{>{\ttfamily}l >{\ttfamily}l l}
+\toprule
+\textrm{\textbf{Σύντομα}} & \textrm{\textbf{Ολόκληρο}} & \textbf{Τι κάνει}\\
+\midrule
+x++;    & x = x + 1; & μεγάλωσε κατά 1\\
+x--;    & x = x - 1; & μίκρυνε κατά 1\\
+x += 5; & x = x + 5; & μεγάλωσε κατά 5\\
+x -= 5; & x = x - 5; & μίκρυνε κατά 5\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{challenge}
+Φτιάξε μια μεταβλητή \code{misos} με τιμή \code{3 * 600 / 2}. Πόσο κάνει; Χρησιμοποίησέ την στο
+\code{delay(misos);} για να αναβοσβήσεις ένα LED και έλεγξε αν μάντεψες σωστά.
+\end{challenge}
+
+% =====================================================================
+\section{Ερωτήσεις: \texttt{if} και \texttt{else}}
+
+Μέχρι τώρα το ρομπότ έκανε πάντα τα ίδια. Με το \code{if} («\textbf{αν}») μπορεί να \textbf{αποφασίζει}:
+κάνει κάτι \emph{μόνο αν} ισχύει μια ερώτηση.
+
+\begin{lstlisting}
+if (IN1)              // ΑΝ πατήθηκε ο διακόπτης στην είσοδο 1...
+{
+    on(OUT1);         // ...άναψε το LED
+}
+\end{lstlisting}
+Η ερώτηση μπαίνει μέσα στις παρενθέσεις. Αν η απάντηση είναι «ναι», γίνονται οι εντολές μέσα στα άγκιστρα.
+Αν είναι «όχι», το ρομπότ τις \textbf{προσπερνάει}.
+
+\subsection*{\texttt{else}: αλλιώς}
+Με το \code{else} λες τι να γίνει όταν η απάντηση είναι «όχι»:
+\Needspace*{10\baselineskip}
+\begin{lstlisting}
+if (IN1)              // αν πατήθηκε...
+{
+    on(OUT1);         // ...άναψε
+}
+else                  // αλλιώς...
+{
+    off(OUT1);        // ...σβήσε
+}
+\end{lstlisting}
+
+\subsection*{Ερωτήσεις με αριθμούς}
+Μπορείς να ρωτήσεις και για αριθμούς, με αυτά τα σύμβολα:
+\begin{center}
+\begin{tabular}{>{\ttfamily}c l >{\ttfamily}l}
+\toprule
+\textrm{\textbf{Σύμβολο}} & \textbf{Ρωτάει} & \textrm{\textbf{Παράδειγμα}}\\
+\midrule
+==  & είναι ίσο;               & fores == 3\\
+!=  & είναι διαφορετικό;       & fores != 3\\
+<   & είναι μικρότερο;         & taxytita < 10\\
+>   & είναι μεγαλύτερο;        & taxytita > 10\\
+<=  & είναι μικρότερο ή ίσο;   & taxytita <= 10\\
+>=  & είναι μεγαλύτερο ή ίσο;  & taxytita >= 10\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{\texttt{else if}: πολλές επιλογές}
+\Needspace*{14\baselineskip}
+\begin{lstlisting}
+if (taxytita > 12)
+{
+    on(OUT3);          // πολύ γρήγορα: κόκκινο LED
+}
+else if (taxytita > 6)
+{
+    on(OUT2);          // μέτρια: κίτρινο LED
+}
+else
+{
+    on(OUT1);          // αργά: πράσινο LED
+}
+\end{lstlisting}
+Το ρομπότ ελέγχει τις ερωτήσεις με τη σειρά και κάνει \textbf{μόνο την πρώτη} που απαντάει «ναι».
+
+\begin{tip}
+Για το ρομπότ, το \code{0} σημαίνει «\textbf{όχι}» και κάθε άλλος αριθμός σημαίνει «\textbf{ναι}».
+Γι' αυτό το \code{if (IN1)} δουλεύει: το \code{IN1} είναι \code{1} όταν ο διακόπτης είναι πατημένος και
+\code{0} όταν δεν είναι.
+\end{tip}
+
+\begin{careful}
+\begin{itemize}[leftmargin=1.2em]
+  \item Για να ρωτήσεις «είναι ίσο;» γράφεις \textbf{δύο} ίσον: \code{if (fores == 3)}.
+        Με ένα (\code{if (fores = 3)}) δεν ρωτάς, αλλά \textbf{βάζεις} το 3 μέσα. Το Rogic θα σου το πει.
+  \item \textbf{Μη} βάζεις \code{;} μετά την παρένθεση του \code{if}. Το \code{if (IN1);} σημαίνει «αν πατήθηκε,
+        μην κάνεις τίποτα», και οι εντολές στα άγκιστρα γίνονται \emph{πάντα}.
+\end{itemize}
+\end{careful}
+
+\begin{challenge}
+Φτιάξε μια μεταβλητή \code{taxytita}. Αν είναι μεγαλύτερη από 8, το ρομπότ να πάει μπροστά για 1 δευτερόλεπτο.
+Αλλιώς να ανάψει το LED της \code{OUT1}. Δοκίμασε με 5 και με 12.
+\end{challenge}
+
+% =====================================================================
+\section{Και, ή, όχι}
+
+Μερικές φορές θέλεις να κάνεις \textbf{δύο ερωτήσεις μαζί}. Γι' αυτό υπάρχουν τρία σύμβολα:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{>{\ttfamily}c l X}
+\toprule
+\textrm{\textbf{Σύμβολο}} & \textbf{Λέξη} & \textbf{Η απάντηση είναι «ναι» όταν...}\\
+\midrule
+\&\& & \textbf{και} & ισχύουν \textbf{και οι δύο} ερωτήσεις\\
+|| & \textbf{ή}   & ισχύει \textbf{τουλάχιστον μία} από τις δύο\\
+! & \textbf{όχι}  & \textbf{δεν} ισχύει η ερώτηση (γυρίζει το «ναι» σε «όχι» και το ανάποδο)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\Needspace*{16\baselineskip}
+\begin{lstlisting}
+if (IN1 && IN2)      // πατήθηκαν ΚΑΙ οι δύο διακόπτες
+{
+    voice(OUT3);
+}
+
+if (IN1 || IN2)      // πατήθηκε ο ένας Ή ο άλλος (ή και οι δύο)
+{
+    on(OUT1);
+}
+
+if (!IN1)            // ΔΕΝ είναι πατημένος ο διακόπτης
+{
+    off(OUT1);
+}
+\end{lstlisting}
+
+\begin{tip}
+Το \code{||} το βρίσκεις στο πληκτρολόγιο πατώντας \textbf{Shift} μαζί με το πλήκτρο \texttt{\textbackslash} (δύο φορές).
+\end{tip}
+
+\begin{challenge}
+Βάλε δύο διακόπτες, στην \code{IN1} και στην \code{IN2}. Το LED της \code{OUT1} να ανάβει μόνο όταν είναι
+πατημένοι \textbf{και οι δύο}, και να σβήνει αλλιώς. (Θα χρειαστείς και την επανάληψη του επόμενου μαθήματος:
+βάλε τα πάντα μέσα σε \code{while (1) { ... }}.)
+\end{challenge}
+
+% =====================================================================
+\section{Επανάληψη με \texttt{while}}
+
+Το \code{while} σημαίνει «\textbf{όσο}». Κάνει τις εντολές μέσα στα άγκιστρα \textbf{ξανά και ξανά}, όσο η
+ερώτηση απαντάει «ναι».
+
+\begin{center}
+\begin{tikzpicture}[node distance=7mm, every node/.style={font=\small}]
+  \node[draw=robBlue, very thick, rounded corners, fill=robBlue!8, align=center, inner sep=6pt] (q) {Ισχύει η ερώτηση;};
+  \node[draw=robGreen, very thick, rounded corners, fill=robGreen!8, right=22mm of q, align=center, inner sep=6pt] (b) {κάνε τις εντολές\\μέσα στα \texttt{\{ \}}};
+  \node[draw=robGray, very thick, rounded corners, fill=robGray!8, below=10mm of q, align=center, inner sep=6pt] (o) {συνέχισε με ό,τι\\είναι μετά το \texttt{\}}};
+  \draw[->, thick, robGreen] (q) -- node[above]{ναι} (b);
+  \draw[->, thick, robGreen] (b.north) |- ++(0,6mm) -| (q.north);
+  \draw[->, thick, robRed] (q) -- node[right]{όχι} (o);
+\end{tikzpicture}
+\end{center}
+
+\Needspace*{16\baselineskip}
+\subsection*{Ένας μετρητής}
+\Needspace*{9\baselineskip}
+\begin{lstlisting}
+int fores = 0;           // ο μετρητής ξεκινάει από το 0
+while (fores < 3)        // όσο ο μετρητής είναι κάτω από 3...
+{
+    ledonoff(OUT1, 200); // ...αναβόσβησε το LED
+    fores++;             // ...και πρόσθεσε 1 στον μετρητή
+}
+// εδώ το LED έχει αναβοσβήσει 3 φορές
+\end{lstlisting}
+
+Ας το παρακολουθήσουμε βήμα βήμα:
+\begin{center}
+\begin{tabular}{c c c l}
+\toprule
+\textbf{Γύρος} & \textbf{\texttt{fores} πριν} & \textbf{\texttt{fores < 3};} & \textbf{Τι γίνεται}\\
+\midrule
+1 & 0 & ναι & αναβοσβήνει, το \texttt{fores} γίνεται 1\\
+2 & 1 & ναι & αναβοσβήνει, το \texttt{fores} γίνεται 2\\
+3 & 2 & ναι & αναβοσβήνει, το \texttt{fores} γίνεται 3\\
+— & 3 & \textbf{όχι} & βγαίνει από το \texttt{while}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{\texttt{while (1)}: για πάντα}
+Αφού το \code{1} σημαίνει πάντα «ναι», το \code{while (1)} δεν σταματάει \textbf{ποτέ}. Το χρησιμοποιούμε όταν
+θέλουμε το ρομπότ να κοιτάει συνέχεια τους αισθητήρες του:
+\begin{lstlisting}
+while (1)                // για πάντα...
+{
+    if (IN1)  on(OUT1);  // ...αν πατήθηκε, άναψε
+    else      off(OUT1); // ...αλλιώς σβήσε
+}
+\end{lstlisting}
+Όταν μέσα στο \code{if} ή στο \code{else} υπάρχει \textbf{μόνο μία} εντολή, μπορείς να παραλείψεις τα άγκιστρα,
+όπως εδώ.
+
+\subsection*{Περιμένω μέχρι να γίνει κάτι}
+Ένα \code{while} με άδεια άγκιστρα απλώς \textbf{περιμένει}:
+\begin{lstlisting}
+while (!IN1)             // όσο ΔΕΝ έχει πατηθεί ο διακόπτης...
+{
+}                        // ...μην κάνεις τίποτα
+wheel12(10, 10);         // πατήθηκε! ξεκίνα
+\end{lstlisting}
+
+\begin{careful}
+Αν στον μετρητή ξεχάσεις το \code{fores++;}, ο μετρητής μένει για πάντα 0, η ερώτηση απαντάει για πάντα «ναι»,
+και το ρομπότ αναβοσβήνει μέχρι να το σβήσεις. Αυτό λέγεται \textbf{ατέρμονη επανάληψη}.
+\end{careful}
+
+\begin{challenge}
+Με ένα \code{while} και έναν μετρητή, κάνε το LED της \code{OUT2} να αναβοσβήσει \textbf{5 φορές}
+και μετά το ρομπότ να παίξει τον ήχο της \code{OUT3} με \code{voice(OUT3);}.
+\end{challenge}
+
+% =====================================================================
+\section{Επανάληψη με \texttt{for}}
+
+Το \code{for} είναι ένα \code{while} που \textbf{μετράει μόνο του}. Το χρησιμοποιούμε όταν ξέρουμε από πριν
+\textbf{πόσες φορές} θέλουμε να επαναλάβουμε κάτι.
+
+\begin{lstlisting}
+for (int i = 0; i < 3; i++)   // κάνε το 3 φορές
+{
+    ledonoff(OUT1, 200);
+}
+\end{lstlisting}
+Κάνει ακριβώς το ίδιο με τον μετρητή του προηγούμενου μαθήματος, αλλά σε μία γραμμή. Μέσα στην παρένθεση
+υπάρχουν \textbf{τρία κομμάτια}, χωρισμένα με \code{;}:
+
+\begin{center}
+\begin{tikzpicture}[font=\ttfamily\large, every node/.style={inner sep=1pt}]
+  \node[anchor=west] (a) at (0,0) {for (};
+  \node[anchor=west, text=robBlue]   (b) at (1.5,0) {int i = 0;};
+  \node[anchor=west, text=robOrange] (c) at (5.3,0) {i < 3;};
+  \node[anchor=west, text=robGreen]  (d) at (8.9,0) {i++};
+  \node[anchor=west] (e) at (9.9,0) {)};
+  \node[below=5mm of b, font=\small\rmfamily, align=center, text=robBlue, text width=3.3cm]
+     {1. ξεκίνα:\\φτιάξε μετρητή \texttt{i}\\και βάλε μέσα 0};
+  \node[below=5mm of c, font=\small\rmfamily, align=center, text=robOrange, text width=3.3cm]
+     {2. συνέχισε όσο\\το \texttt{i} είναι\\κάτω από 3};
+  \node[below=5mm of d, font=\small\rmfamily, align=center, text=robGreen, text width=3.0cm]
+     {3. μετά από\\κάθε γύρο,\\πρόσθεσε 1 στο \texttt{i}};
+\end{tikzpicture}
+\end{center}
+
+Ο μετρητής είναι μια κανονική μεταβλητή, οπότε μπορείς να τον χρησιμοποιήσεις μέσα στην επανάληψη:
+
+\begin{lstlisting}
+for (int s = 0; s <= 15; s++)   // η s πάει 0, 1, 2, ..., 15
+{
+    wheel12(s, s);              // το ρομπότ επιταχύνει σιγά σιγά
+    delay(200);
+}
+wheel12(0, 0);
+\end{lstlisting}
+
+Ο μετρητής δεν χρειάζεται να ανεβαίνει κατά 1. Εδώ ένα σέρβο κάνει «σάρωση» με βήματα του 10:
+\begin{lstlisting}
+for (int thesi = 17; thesi <= 197; thesi += 10)
+{
+    servo1(thesi);
+    delay(100);
+}
+\end{lstlisting}
+
+\begin{tip}
+Όταν ο μετρητής γίνεται ταχύτητα, χρόνος ή θέση (όπως στα δύο παραδείγματα), το Rogic γράφει τα μπλοκ
+\textbf{γύρο γύρο}: 16 γύροι γίνονται 16 φορές τα ίδια μπλοκ. Γι' αυτό τέτοιες επαναλήψεις μπορούν να έχουν
+έως 32 γύρους.
+\end{tip}
+
+\begin{challenge}
+Με ένα \code{for} που \textbf{μετράει ανάποδα} (από 15 μέχρι 0, με \code{s--}), κάνε το ρομπότ να
+\textbf{επιβραδύνει} σιγά σιγά μέχρι να σταματήσει.
+\end{challenge}
+
+% =====================================================================
+\section{Βγαίνω από μια επανάληψη: \texttt{break}}
+
+Το \code{break} σε βγάζει \textbf{αμέσως} έξω από το \code{while} ή το \code{for} που βρίσκεσαι, ακόμα κι αν
+η ερώτηση απαντάει ακόμα «ναι». Το πρόγραμμα συνεχίζει με ό,τι είναι μετά το \texttt{\}}.
+
+\Needspace*{12\baselineskip}
+\begin{lstlisting}
+while (1)                   // για πάντα...
+{
+    wheel12(10, 10);        // ...πήγαινε μπροστά
+    if (IN1)                // αν χτύπησες σε κάτι...
+    {
+        break;              // ...βγες από την επανάληψη!
+    }
+}
+wheel12(0, 0);              // εδώ φτάνεις μόνο μετά το break
+voice(OUT3);
+\end{lstlisting}
+
+\begin{careful}
+Τα μπλοκ του ρομπότ έχουν \textbf{ένα} \code{break} σε κάθε επανάληψη, και μια επανάληψη με \code{break} δεν
+μπορεί να έχει μέσα της άλλο \code{while}. Αν θέλεις να βγεις για δύο λόγους, ένωσέ τους με \code{||}:
+\code{if (IN1 || IN2) break;}
+\end{careful}
+
+\begin{challenge}
+Το ρομπότ να αναβοσβήνει το LED της \code{OUT1} \textbf{μέχρι 20 φορές} με ένα \code{for}, αλλά να σταματάει
+νωρίτερα με \code{break} αν πατηθεί ο διακόπτης της \code{IN1}.
+\end{challenge}
+
+% =====================================================================
+\section{Οι δικές μου εντολές: συναρτήσεις}
+
+Το καλύτερο: μπορείς να φτιάξεις \textbf{τις δικές σου εντολές}! Μια δική σου εντολή λέγεται \textbf{συνάρτηση}.
+Της δίνεις ένα όνομα και γράφεις τι θα κάνει. Μετά τη χρησιμοποιείς όσες φορές θέλεις, όπως τις εντολές του ρομπότ.
+
+\Needspace*{20\baselineskip}
+\begin{lstlisting}
+#include "schoolkits.h"
+
+void mprosta(int xronos)     // η δική μου εντολή «mprosta»
+{
+    wheel12(10, 10);         // πήγαινε μπροστά
+    delay(xronos);           // για όσο χρόνο μου είπαν
+    wheel12(0, 0);           // σταμάτα
+}
+
+int main(void)
+{
+    start();
+    mprosta(1000);           // μπροστά για 1 δευτερόλεπτο
+    delay(500);
+    mprosta(3000);           // μπροστά για 3 δευτερόλεπτα
+    end();
+    return 0;
+}
+\end{lstlisting}
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \code{void} σημαίνει ότι η εντολή απλώς \textbf{κάνει κάτι}. Οι δικές σου εντολές ξεκινάνε πάντα με \code{void}.
+  \item \code{mprosta} είναι το \textbf{όνομα}, με τους ίδιους κανόνες όπως στις μεταβλητές.
+  \item Το \code{int xronos} μέσα στις παρενθέσεις είναι ένα κουτάκι που \textbf{γεμίζει} όταν χρησιμοποιείς την εντολή.
+        Στο \code{mprosta(1000);} το \code{xronos} γίνεται 1000. Επειδή το \code{xronos} πηγαίνει στο \code{delay},
+        όταν χρησιμοποιείς την εντολή του δίνεις αριθμό που ξέρεις από πριν, όπως το \code{1000}.
+  \item Τη συνάρτηση τη γράφεις \textbf{πάνω από} το \code{main}, για να την ξέρει το ρομπότ όταν τη συναντήσει.
+\end{itemize}
+
+Μια εντολή μπορεί να μη θέλει τίποτα ή να θέλει πολλά πράγματα, χωρισμένα με κόμμα:
+\Needspace*{13\baselineskip}
+\begin{lstlisting}
+void beep(void)                       // δεν θέλει τίποτα
+{
+    voice(OUT3);
+}
+
+void kinisi(int aristero, int dexi, int xronos)   // θέλει τρία
+{
+    wheel12(aristero, dexi);
+    delay(xronos);
+    wheel12(0, 0);
+}
+\end{lstlisting}
+
+\begin{challenge}
+Φτιάξε μια δική σου εντολή \code{strofi(int xronos)} που κάνει το ρομπότ να στρίψει επί τόπου για
+\code{xronos} χιλιοστά και μετά σταματάει. Χρησιμοποίησέ τη μαζί με την \code{mprosta} για να κάνει το ρομπότ
+ένα τετράγωνο (μπροστά, στροφή, 4 φορές, με ένα \code{for}).
+\end{challenge}
+
+% =====================================================================
+\Needspace*{30\baselineskip}
+\section{Πολλές επιλογές με \texttt{switch}}
+
+Όταν θέλεις να ελέγξεις \textbf{μία μεταβλητή} για πολλές διαφορετικές τιμές, αντί για πολλά \code{else if}
+μπορείς να χρησιμοποιήσεις το \code{switch} («διακόπτης»):
+
+\Needspace*{17\baselineskip}
+\begin{lstlisting}
+int epilogi = 2;           // 1 = μπροστά, 2 = πίσω, κάτι άλλο = στροφή
+switch (epilogi)           // τι έχει η epilogi;
+{
+    case 1:                // έχει 1
+        wheel12(10, 10);
+        break;
+    case 2:                // έχει 2
+        wheel12(-10, -10);
+        break;
+    default:               // κάτι άλλο
+        wheel12(10, -10);
+        break;
+}
+delay(1000);
+wheel12(0, 0);
+\end{lstlisting}
+
+\begin{itemize}[leftmargin=1.4em]
+  \item Κάθε \code{case} έχει έναν αριθμό και \code{:} στο τέλος.
+  \item Κάθε \code{case} τελειώνει με \code{break;}. Αν το ξεχάσεις, το Rogic θα σου το πει.
+  \item Το \code{default} γίνεται όταν δεν ταιριάζει κανένα \code{case}.
+\end{itemize}
+
+Τώρα ξέρεις αρκετή C για να κάνεις σχεδόν τα πάντα με το ρομπότ σου. Στο Μέρος Β θα βρεις όλες τις εντολές του.
+
+% ---------------------------------------------------------------------
+\subsection*{Οι λέξεις της C που έμαθες}
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{>{\ttfamily}l X >{\ttfamily}l X}
+\toprule
+int      & κουτάκι για ακέραιους        & while    & επανάλαβε όσο...\\
+char     & μικρό κουτάκι (0–255)       & for      & επανάλαβε τόσες φορές\\
+if       & αν...                        & break    & βγες από την επανάληψη\\
+else     & αλλιώς...                    & void     & η αρχή μιας δικής σου εντολής\\
+switch   & διάλεξε ανάλογα με έναν αριθμό & return & η τελευταία γραμμή του \code{main}\\
+case     & μία επιλογή του \code{switch} & default & όλες οι άλλες επιλογές\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\meros[robTeal]{Β}{Το λεξικό του ρομπότ}{Όλες οι εντολές που ξέρει το ρομπότ σου}
+
+Τώρα που ξέρεις C, ήρθε η ώρα να γνωρίσεις όλες τις εντολές του ρομπότ. Δεν χρειάζεται να τις μάθεις
+απ' έξω: όταν θέλεις να κάνεις κάτι, βρες την κάρτα της εντολής και δες πώς γράφεται.
+
+\subsection*{Πώς διαβάζεις τις κάρτες}
+Κάθε εντολή έχει τη δική της χρωματιστή κάρτα. Σε κάθε κάρτα θα δεις:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{\color{robBlue}Τι κάνει} η εντολή.
+  \item \textbf{\color{robOrange}Τι γράφεις μέσα στις παρενθέσεις} και ποιους αριθμούς επιτρέπεται να βάλεις.
+  \item \textbf{\color{robTeal}Τι σου δίνει πίσω}, για τους αισθητήρες, που «απαντάνε» με ναι ή όχι.
+  \item \textbf{\color{robGreen}Παράδειγμα} που μπορείς να αντιγράψεις.
+\end{itemize}
+Θυμήσου τους δύο κανόνες από το μάθημα των μεταβλητών: οι αριθμοί που βάζεις στις εντολές πρέπει να είναι
+γνωστοί πριν τρέξει το πρόγραμμα, και κάθε κάρτα γράφει από πόσο μέχρι πόσο μπορείς να βάλεις.
+
+% =====================================================================
+\section{Ξεκίνημα και τέλος}
+
+\begin{fcard}{robBlue}{start();}
+\what Ξυπνάει το ρομπότ: ετοιμάζει τους αισθητήρες, τις εξόδους και τα μοτέρ.
+\inside Τίποτα. Γράφεις άδειες παρενθέσεις.
+\begin{careful}
+Πρέπει να είναι η \textbf{πρώτη} εντολή του προγράμματος. Χωρίς αυτήν, τίποτα δεν δουλεύει σωστά.
+\end{careful}
+\end{fcard}
+
+\begin{fcard}{robBlue}{end();}
+\what Σβήνει \textbf{όλα} τα μοτέρ και όλες τις εξόδους και μετά σταματάει το πρόγραμμα για πάντα.
+\inside Τίποτα.
+\begin{careful}
+Ό,τι γράψεις \textbf{μετά} το \code{end();} δεν θα γίνει ποτέ. Για να ξαναξεκινήσει το πρόγραμμα,
+σβήνεις και ανάβεις το ρομπότ.
+\end{careful}
+\end{fcard}
+
+% =====================================================================
+\section{Περιμένω λίγο (χρόνος)}
+
+Οι εντολές εκτελούνται πάρα πολύ γρήγορα, η μία μετά την άλλη. Αν θέλεις το ρομπότ να κάνει
+κάτι \emph{για λίγη ώρα} (π.χ. να πάει μπροστά για 2 δευτερόλεπτα), του λες να \textbf{περιμένει}.
+Όσο περιμένει, τα μοτέρ και τα LED μένουν όπως τα άφησες.
+
+\begin{fcard}{robPurple}{delay(χιλιοστά);}
+\what Το ρομπότ περιμένει όσο χρόνο του πεις. Είναι η εντολή που χρησιμοποιεί και το Rogic.
+\inside Τον χρόνο σε \textbf{χιλιοστά του δευτερολέπτου}. Το \code{1000} είναι 1 δευτερόλεπτο.
+\begin{values}
+delay(100);   & δέκατο του δευτερολέπτου (το πιο μικρό)\\
+delay(500);   & μισό δευτερόλεπτο\\
+delay(1000);  & 1 δευτερόλεπτο\\
+delay(2500);  & 2,5 δευτερόλεπτα\\
+delay(25500); & 25,5 δευτερόλεπτα\\
+\end{values}
+\begin{careful}
+Η \code{delay} μετράει μόνο σε \textbf{βήματα του 100}. Το \code{delay(250)} περιμένει 0,2
+δευτερόλεπτα (κόβει το 50). Το \code{delay(50)} \textbf{δεν περιμένει καθόλου}!
+\end{careful}
+\end{fcard}
+
+\begin{fcard}{robPurple}{sleep(δέκατα);}
+\what Το ίδιο με την \code{delay}, αλλά μετράει σε \textbf{δέκατα του δευτερολέπτου}.
+\inside Έναν αριθμό από \code{0} έως \code{255}. Το \code{10} είναι 1 δευτερόλεπτο, το \code{255} είναι 25,5 δευτερόλεπτα.
+\example
+\begin{lstlisting}
+sleep(20);    // περίμενε 2 δευτερόλεπτα
+\end{lstlisting}
+\end{fcard}
+
+% =====================================================================
+\section{Μοτέρ (ρόδες)}
+
+Το ρομπότ μπορεί να έχει έως \textbf{4 μοτέρ}. Συνήθως το \textbf{μοτέρ 1} και το \textbf{μοτέρ 2}
+είναι οι δύο ρόδες. Σε κάθε μοτέρ λες δύο πράγματα:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Πόσο γρήγορα}: από \code{0} (σταματημένο) έως \code{15} (τέρμα γκάζι).
+  \item \textbf{Προς τα πού}: με το πρόσημο. Θετικός αριθμός (π.χ. \code{10}) = μπροστά,
+        αρνητικός (π.χ. \code{-10}) = πίσω.
+\end{itemize}
+
+\begin{tip}
+Το «μπροστά» εδώ είναι το ίδιο με το «μπροστά» του Rogic. Αν το ρομπότ σου πηγαίνει ανάποδα,
+τα καλώδια του μοτέρ είναι συνδεδεμένα αντίστροφα: γύρισέ τα ή άλλαξε το πρόσημο.
+\end{tip}
+
+\begin{fcard}{robOrange}{motor1(ταχύτητα); · motor2(...); · motor3(...); · motor4(...);}
+\what Βάζει ένα μοτέρ να γυρίσει. Το \code{motor1} είναι το μοτέρ 1, το \code{motor2} το μοτέρ 2 κ.ο.κ.
+Το μοτέρ συνεχίζει να γυρίζει μέχρι να του πεις κάτι άλλο.
+\inside Την ταχύτητα, από \code{-15} έως \code{15}.
+\begin{values}
+motor1(15);  & μπροστά, όσο πιο γρήγορα γίνεται\\
+motor1(8);   & μπροστά, με τη μισή περίπου ταχύτητα\\
+motor1(0);   & σταμάτα\\
+motor1(-8);  & πίσω, με τη μισή περίπου ταχύτητα\\
+motor1(-15); & πίσω, όσο πιο γρήγορα γίνεται\\
+\end{values}
+Αν γράψεις πάνω από 15 (π.χ. 50), το ρομπότ το κάνει μόνο του 15. Το ίδιο και κάτω από −15.
+\begin{careful}
+Με πολύ μικρές ταχύτητες (\code{1}, \code{2}, \code{3}) το μοτέρ μπορεί να μην έχει αρκετή δύναμη
+να κουνήσει το ρομπότ. Ξεκίνα από το \code{6} και πάνω.
+\end{careful}
+\end{fcard}
+
+\begin{fcard}{robOrange}{wheel12(αριστερό, δεξί);}
+\what Δίνει ταχύτητα \textbf{και στις δύο ρόδες μαζί}: το πρώτο νούμερο πάει στο μοτέρ 1 και το δεύτερο στο μοτέρ 2.
+Είναι το ίδιο με το να γράψεις \code{motor1(...)} και μετά \code{motor2(...)}.
+\inside Δύο ταχύτητες, η καθεμία από \code{-15} έως \code{15}.
+\begin{values}
+wheel12(10, 10);  & μπροστά\\
+wheel12(-10, -10);& πίσω\\
+wheel12(10, -10); & στροφή επί τόπου προς τη μία μεριά\\
+wheel12(-10, 10); & στροφή επί τόπου προς την άλλη μεριά\\
+wheel12(10, 4);   & στροφή «φαρδιά», ενώ προχωράει\\
+wheel12(0, 0);    & σταμάτα\\
+\end{values}
+\example
+\begin{lstlisting}
+wheel12(10, 10);  // πήγαινε μπροστά...
+delay(2000);      // ...για 2 δευτερόλεπτα
+wheel12(0, 0);    // σταμάτα
+\end{lstlisting}
+\end{fcard}
+
+\begin{fcard}{robOrange}{wheel34(μοτέρ3, μοτέρ4);}
+\what Το ίδιο με την \code{wheel12}, αλλά για το μοτέρ 3 και το μοτέρ 4.
+\inside Δύο ταχύτητες από \code{-15} έως \code{15}.
+\end{fcard}
+
+\begin{fcard}{robOrange}{motor(θύρα, κατεύθυνση, ταχύτητα);}
+\what Βάζει ένα μοτέρ να γυρίσει, γράφοντας χωριστά την κατεύθυνση και την ταχύτητα.
+Αυτή την εντολή γράφει το Rogic όταν μετατρέπει τα μπλοκ σε κώδικα.
+\inside Τρία πράγματα:
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{θύρα}: \code{0} για το μοτέρ 1, \code{2} για το μοτέρ 2, \code{4} για το μοτέρ 3, \code{6} για το μοτέρ 4.
+  \item \textbf{κατεύθυνση}: \code{DIR_CW} για μπροστά ή \code{DIR_CCW} για πίσω.
+  \item \textbf{ταχύτητα}: από \code{0} έως \code{15} (εδώ \emph{χωρίς} μείον).
+\end{itemize}
+\example
+\begin{lstlisting}
+motor(0, DIR_CW, 12);   // μοτέρ 1 μπροστά με ταχύτητα 12
+motor(2, DIR_CCW, 12);  // μοτέρ 2 πίσω με ταχύτητα 12
+\end{lstlisting}
+\begin{careful}
+Η θύρα είναι \code{0, 2, 4, 6} και \textbf{όχι} 1, 2, 3, 4! Και η ταχύτητα εδώ είναι μόνο από \code{0}
+έως \code{15}. Γι' αυτό είναι πιο εύκολο να χρησιμοποιείς τις \code{motor1}–\code{motor4}.
+\end{careful}
+\end{fcard}
+
+\begin{careful}
+Τα \textbf{μοτέρ 3 και 4} χρησιμοποιούν τις ίδιες υποδοχές με τις \textbf{εξόδους 1–4}:
+το μοτέρ 3 πιάνει τις \code{OUT1} και \code{OUT2} και το μοτέρ 4 τις \code{OUT3} και \code{OUT4}.
+Αν βάλεις μοτέρ 3, μη βάλεις LED ή σέρβο στις εξόδους 1 και 2.
+\end{careful}
+
+% =====================================================================
+\section{Σέρβο (μοτέρ που πάει σε θέση)}
+
+Ένα \textbf{σέρβο} δεν γυρίζει συνέχεια όπως οι ρόδες. Πηγαίνει σε μια \textbf{θέση} και μένει εκεί,
+σαν δείκτης ρολογιού. Είναι καλό για χέρια, δαγκάνες και πόρτες.
+
+\begin{fcard}{robTeal}{servo1(θέση); · servo2(...); · servo3(...); · servo4(...); · servo5(...);}
+\what Πηγαίνει το σέρβο σε μια θέση. Το \code{servo1} είναι το σέρβο στην έξοδο \code{OUT1}, το \code{servo2} στην \code{OUT2},
+και έτσι μέχρι το \code{servo5} στην \code{OUT5}. Το σέρβο μένει στη θέση του μέχρι να του πεις άλλη.
+\inside Τη θέση, έναν αριθμό από \code{0} έως \code{210}. Στο Rogic, ο αριθμός είναι περίπου
+«μοίρες + 17»:
+\begin{values}
+servo1(17);  & η μία άκρη (περίπου 0 μοίρες)\\
+servo1(62);  & περίπου 45 μοίρες\\
+servo1(107); & η μέση (περίπου 90 μοίρες)\\
+servo1(152); & περίπου 135 μοίρες\\
+servo1(197); & η άλλη άκρη (περίπου 180 μοίρες)\\
+\end{values}
+Αν γράψεις πάνω από 210, το ρομπότ το κάνει μόνο του 210.
+\example
+\begin{lstlisting}
+servo1(17);    // άνοιξε τη δαγκάνα
+delay(1000);   // άφησε χρόνο στο σέρβο να φτάσει
+servo1(107);   // κλείσε τη δαγκάνα στη μέση
+\end{lstlisting}
+\begin{tip}
+Το σέρβο θέλει λίγο χρόνο για να φτάσει στη θέση. Βάλε ένα \code{delay} μετά από κάθε κίνηση.
+Και κάθε σέρβο είναι λίγο διαφορετικό: δοκίμασε για να βρεις τους δικούς σου αριθμούς.
+\end{tip}
+\begin{careful}
+Αν μια έξοδος έγινε σέρβο, το \code{on()} σε αυτή την έξοδο δεν κάνει πια τίποτα, και το \code{off()}
+κάνει το σέρβο να «χαλαρώσει» και να μην κρατάει τη θέση του.
+\end{careful}
+\end{fcard}
+
+% =====================================================================
+\section{Έξοδοι: LED, βομβητής, ήχος}
+
+Το ρομπότ έχει \textbf{5 εξόδους}, με τα ονόματα \code{OUT1} έως \code{OUT5}. Εκεί βάζεις πράγματα
+που τα ανάβεις και τα σβήνεις: LED, βομβητή, μονάδα ήχου, μικρά μοτεράκια.
+
+\begin{fcard}{robRed}{on(έξοδος); · off(έξοδος);}
+\what Το \code{on} \textbf{ανάβει} μια έξοδο με όλη της τη δύναμη και το \code{off} τη \textbf{σβήνει}.
+Η έξοδος μένει έτσι μέχρι να της πεις κάτι άλλο.
+\inside Ποια έξοδο: \code{OUT1}, \code{OUT2}, \code{OUT3}, \code{OUT4} ή \code{OUT5}
+(μπορείς να γράψεις και σκέτο \code{1} έως \code{5}).
+\example
+\begin{lstlisting}
+on(OUT1);      // άναψε το LED της εξόδου 1
+delay(1000);
+off(OUT1);     // σβήσ' το
+\end{lstlisting}
+\end{fcard}
+
+\begin{fcard}{robRed}{voice(έξοδος);}
+\what Παίζει τον ήχο της \textbf{μονάδας ήχου} που είναι συνδεδεμένη σε αυτή την έξοδο. Ανάβει την έξοδο
+για 0,2 δευτερόλεπτα, που είναι το σήμα για να ξεκινήσει ο ήχος, και μετά τη σβήνει.
+\inside Ποια έξοδο: \code{OUT1} έως \code{OUT5}.
+\example
+\begin{lstlisting}
+voice(OUT3);   // παίξε τον ήχο της μονάδας στην έξοδο 3
+\end{lstlisting}
+\begin{tip}
+Η \code{voice} περιμένει 0,2 δευτερόλεπτα μόνη της, άρα το πρόγραμμα σταματάει για λίγο εκεί.
+\end{tip}
+\end{fcard}
+
+\begin{fcard}{robRed}{ledonoff(έξοδος, χιλιοστά);}
+\what Αναβοσβήνει μια έξοδο \textbf{μία φορά}: την ανάβει, περιμένει, τη σβήνει και περιμένει ξανά τον ίδιο χρόνο.
+\inside Δύο πράγματα: την έξοδο (\code{OUT1} έως \code{OUT5}) και πόσο να μείνει αναμμένη,
+σε χιλιοστά του δευτερολέπτου, σε βήματα του 100 (όπως στη \code{delay}).
+\example
+\begin{lstlisting}
+while (1)
+{
+    ledonoff(OUT2, 200);   // αναβόσβημα για πάντα
+}
+\end{lstlisting}
+\end{fcard}
+
+\begin{fcard}{robRed}{setSegment(αριθμός);}
+\what Δείχνει έναν αριθμό από 0 έως 15 με τις εξόδους \code{OUT1}–\code{OUT4}, για μια οθονίτσα αριθμών
+(ψηφίο 7 τμημάτων) που μετατρέπει τις 4 εξόδους σε νούμερο. Κάθε έξοδος έχει μια «αξία»:
+\code{OUT1} = 1, \code{OUT2} = 2, \code{OUT3} = 4, \code{OUT4} = 8. Ανάβουν οι έξοδοι που αθροίζουν τον αριθμό σου.
+\inside Έναν αριθμό από \code{0} έως \code{15}.
+\example
+\begin{lstlisting}
+setSegment(5);    // 5 = 1 + 4: ανάβουν η OUT1 και η OUT3
+\end{lstlisting}
+\end{fcard}
+
+% =====================================================================
+\section{Αισθητήρες (είσοδοι)}
+
+Το ρομπότ έχει \textbf{7 εισόδους}, τις \code{IN1} έως \code{IN7}. Εκεί βάζεις αισθητήρες: διακόπτη επαφής,
+αισθητήρα υπερύθρων, μαγνητικό, κίνησης, κλίσης. Οι είσοδοι δεν είναι εντολές: είναι
+\textbf{ερωτήσεις} που απαντάνε «ναι» ή «όχι».
+
+\begin{fcard}{robGreen}{IN1 · IN2 · IN3 · IN4 · IN5 · IN6 · IN7}
+\what Ρωτάει τον αισθητήρα της εισόδου αν \textbf{νιώθει κάτι} (πατήθηκε ο διακόπτης, ο αισθητήρας βλέπει κάτι).
+\inside Τίποτα, ούτε καν παρενθέσεις. Γράφεις σκέτο \code{IN1}. Μπορείς να γράψεις και με μικρά: \code{in1}.
+\gives \code{1} (ναι) όταν ο αισθητήρας νιώθει κάτι, \code{0} (όχι) όταν δεν νιώθει τίποτα.
+Τις βάζουμε μέσα σε \code{if} («αν») ή \code{while} («όσο»).
+\example
+\Needspace*{10\baselineskip}
+\begin{lstlisting}
+if (IN1)              // αν πατήθηκε ο διακόπτης στην είσοδο 1...
+{
+    on(OUT1);         // ...άναψε το LED
+}
+else                  // αλλιώς...
+{
+    off(OUT1);        // ...σβήσ' το
+}
+\end{lstlisting}
+Το \code{!} σημαίνει «\textbf{όχι}». Έτσι μπορείς να περιμένεις μέχρι να πατηθεί κάτι:
+\begin{lstlisting}
+while (!IN1)          // όσο ΔΕΝ έχει πατηθεί ο διακόπτης...
+{
+}                     // ...μην κάνεις τίποτα, απλώς περίμενε
+wheel12(10, 10);      // πατήθηκε! ξεκίνα
+\end{lstlisting}
+\end{fcard}
+
+\begin{fcard}{robGreen}{getIn(θέση)}
+\what Διαβάζει μια είσοδο «ανάποδα», όπως τη βλέπει το ηλεκτρονικό κύκλωμα.
+\inside Θέση από \code{0} έως \code{6}: το \code{0} είναι η \code{IN1}, …, το \code{6} είναι η \code{IN7}.
+\gives \code{1} όταν ο αισθητήρας \textbf{δεν} νιώθει τίποτα και \code{0} όταν νιώθει.
+\begin{tip}
+Είναι μπερδεμένο γιατί είναι ανάποδο και μετράει από το 0. Χρησιμοποίησε καλύτερα τα \code{IN1}–\code{IN7}.
+\end{tip}
+\end{fcard}
+
+% =====================================================================
+\meros[robPurple]{Γ}{Βοήθεια}{Λάθη, ολόκληρα προγράμματα, πίνακας και λύσεις}
+
+\section{Τα πιο συνηθισμένα λάθη}
+
+\begin{enumerate}[leftmargin=1.6em, itemsep=4pt]
+  \item \textbf{Ξέχασα το \code{;}} στο τέλος μιας εντολής. Το Rogic θα βγάλει λάθος στην επόμενη γραμμή.
+  \item \textbf{Ξέχασα ένα άγκιστρο \texttt{\}}.} Κάθε \texttt{\{} θέλει το δικό του \texttt{\}}. Οι εσοχές σε βοηθάνε να δεις ποιο λείπει.
+  \item \textbf{Έγραψα \code{=} αντί για \code{==} μέσα σε \code{if}.} Το \code{if (x = 3)} δεν ρωτάει, αλλά βάζει το 3 στο \code{x}. Γράψε \code{if (x == 3)}.
+  \item \textbf{Έβαλα \code{;} μετά το \code{if (...)} ή το \code{while (...)}.} Τότε το \code{if} ή το \code{while} δεν ελέγχει τίποτα από όσα είναι στα άγκιστρα.
+  \item \textbf{Το πρόγραμμα κόλλησε σε μια επανάληψη.} Μήπως ξέχασες να αλλάξεις τον μετρητή, π.χ. με \code{fores++};
+  \item \textbf{Η διαίρεση βγάζει λάθος αποτέλεσμα.} Με ακέραιους, το \code{7 / 2} κάνει \code{3}: τα δεκαδικά πετιούνται.
+  \item \textbf{Έγραψα την ίδια μεταβλητή με \code{int} δύο φορές.} Το \code{int} μπαίνει μόνο την πρώτη φορά, όταν φτιάχνεις το κουτάκι.
+  \item \textbf{Έγραψα \code{Delay} αντί για \code{delay}.} Τα κεφαλαία και τα μικρά μετράνε.
+  \item \textbf{Έγραψα \code{delay(50)} και δεν περιμένει.} Η \code{delay} μετράει σε βήματα του 100:
+        γράψε τουλάχιστον \code{delay(100)}.
+  \item \textbf{Το ρομπότ προχωράει για πάντα.} Ξέχασες να σταματήσεις τα μοτέρ: \code{wheel12(0, 0);}
+  \item \textbf{Το ρομπότ δεν κάνει τίποτα μετά από ένα σημείο.} Μήπως έβαλες \code{end();} πιο πάνω;
+        Μετά το \code{end()} δεν εκτελείται τίποτα.
+  \item \textbf{Το μοτέρ βουίζει αλλά δεν κινείται.} Η ταχύτητα είναι πολύ μικρή: δοκίμασε \code{6} και πάνω.
+  \item \textbf{Έβαλα \code{motor(1, DIR_CW, 10)} και κάνει περίεργα.} Στη \code{motor} η θύρα είναι \code{0, 2, 4, 6}.
+  \item \textbf{Το ρομπότ γυρίζει γύρω γύρω αντί να πάει ευθεία.} Το ένα μοτέρ είναι συνδεδεμένο ανάποδα:
+        δοκίμασε \code{wheel12(10, -10)} ή γύρισε τα καλώδια.
+  \item \textbf{Το LED στην \code{OUT1} δεν ανάβει.} Μήπως χρησιμοποιείς το μοτέρ 3 ή το \code{servo1};
+        Πιάνουν την ίδια έξοδο.
+  \item \textbf{Το Rogic λέει ότι κάτι «δεν μπορεί να γίνει μπλοκ».} Διάβασε το μήνυμα: γράφει τη γραμμή και τι
+        να αλλάξεις. Συνήθως είναι ένας από τους δύο κανόνες των μεταβλητών (από 0 έως 255, και αριθμοί που
+        είναι γνωστοί πριν τρέξει το πρόγραμμα).
+  \item \textbf{Το Rogic λέει ότι το πρόγραμμα είναι πολύ μεγάλο.} Στο ρομπότ χωράνε λίγα μπλοκ. Βάλε ό,τι
+        επαναλαμβάνεται σε μια επανάληψη ή σε μια δική σου εντολή, αντί να το γράφεις πολλές φορές.
+  \item \textbf{Βγαίνει λάθος σε μια γραμμή που μοιάζει σωστή.} Μήπως γράφτηκε κάτι με ελληνικούς χαρακτήρες
+        έξω από σχόλιο; Γύρισε το πληκτρολόγιο στα αγγλικά και ξαναγράψ' το.
+\end{enumerate}
+
+% =====================================================================
+\Needspace*{24\baselineskip}
+\section{Τρία ολόκληρα προγράμματα}
+
+\Needspace*{18\baselineskip}
+\subsection*{1. Χορευτικό}
+\Needspace*{15\baselineskip}
+\begin{lstlisting}
+#include "schoolkits.h"
+
+int main(void)
+{
+    start();
+    wheel12(10, 10);   delay(1500);   // μπροστά 1,5 δευτ.
+    wheel12(10, -10);  delay(1000);   // στροφή επί τόπου
+    wheel12(-10, -10); delay(1500);   // πίσω 1,5 δευτ.
+    wheel12(0, 0);                    // σταμάτα
+    voice(OUT3);                      // και πες κάτι!
+    end();
+    return 0;
+}
+\end{lstlisting}
+
+\Needspace*{30\baselineskip}
+\subsection*{2. Ρομπότ που αποφεύγει τα εμπόδια}
+Διακόπτης επαφής μπροστά, στην \code{IN1}.
+\Needspace*{24\baselineskip}
+\begin{lstlisting}
+#include "schoolkits.h"
+
+int main(void)
+{
+    start();
+    while (1)
+    {
+        if (IN1)                       // χτύπησε σε κάτι!
+        {
+            wheel12(-10, -10);         // κάνε πίσω
+            delay(800);
+            wheel12(10, -10);          // στρίψε
+            delay(600);
+        }
+        else
+        {
+            wheel12(10, 10);           // αλλιώς πήγαινε μπροστά
+        }
+    }
+    end();
+    return 0;
+}
+\end{lstlisting}
+
+\Needspace*{24\baselineskip}
+\subsection*{3. Μετράω τα χτυπήματα}
+Διακόπτης επαφής μπροστά, στην \code{IN1}. Το ρομπότ σταματάει μετά από 3 χτυπήματα.
+\Needspace*{24\baselineskip}
+\begin{lstlisting}
+#include "schoolkits.h"
+
+int main(void)
+{
+    start();
+    int xtypimata = 0;               // πόσες φορές χτύπησε
+    while (xtypimata < 3)            // μέχρι να χτυπήσει 3 φορές
+    {
+        wheel12(10, 10);             // μπροστά
+        if (IN1)                     // χτύπησε!
+        {
+            xtypimata++;             // μέτρα το χτύπημα
+            wheel12(-10, -10);       // κάνε πίσω
+            delay(500);
+            wheel12(10, -10);        // στρίψε
+            delay(400);
+        }
+    }
+    wheel12(0, 0);                   // σταμάτα
+    voice(OUT3);                     // τέλος!
+    end();
+    return 0;
+}
+\end{lstlisting}
+
+% =====================================================================
+\Needspace*{30\baselineskip}
+\section{Πίνακας με όλα με μια ματιά}
+
+{\small
+\renewcommand{\arraystretch}{1.25}
+\begin{longtable}{>{\ttfamily}p{0.36\textwidth} p{0.58\textwidth}}
+\toprule
+\textrm{\textbf{Εντολή}} & \textbf{Τι κάνει και τι βάζεις μέσα}\\
+\midrule
+\endhead
+start(); & ξύπνα το ρομπότ (πρώτη εντολή)\\
+end(); & σβήσε τα πάντα και σταμάτα για πάντα\\
+delay(χιλιοστά); & περίμενε· σε βήματα του 100 (1000 = 1 δευτερόλεπτο)\\
+sleep(δέκατα); & περίμενε· 0 έως 255 δέκατα\\
+\midrule
+motor1(ταχ.); ... motor4(ταχ.); & ένα μοτέρ· −15 (πίσω) έως 15 (μπροστά), 0 = στάση\\
+wheel12(αρ., δεξ.); & μοτέρ 1 και 2 μαζί· −15 έως 15 το καθένα\\
+wheel34(μ3, μ4); & μοτέρ 3 και 4 μαζί· −15 έως 15 το καθένα\\
+motor(θύρα, κατ., ταχ.); & θύρα 0/2/4/6 · \code{DIR_CW} / \code{DIR_CCW} · ταχ. 0 έως 15\\
+\midrule
+servo1(θέση); ... servo5(θέση); & σέρβο στην OUT1–OUT5· 0 έως 210 (μέση: 107)\\
+\midrule
+on(OUTx);  off(OUTx); & άναψε / σβήσε έξοδο· OUT1 έως OUT5\\
+voice(OUTx); & παίξε τον ήχο της μονάδας ήχου\\
+ledonoff(OUTx, χιλ.); & αναβόσβησε μία φορά· χιλιοστά σε βήματα του 100\\
+setSegment(αριθμός); & αριθμός 0 έως 15 στις OUT1–OUT4\\
+\midrule
+IN1 ... IN7 & ρωτάει αισθητήρα· 1 = νιώθει κάτι\\
+getIn(θέση) & αισθητήρας «ανάποδα»· θέση 0 έως 6 (0 = IN1)\\
+\bottomrule
+\end{longtable}}
+
+% =====================================================================
+\section{Λύσεις των προκλήσεων}
+
+Υπάρχουν πολλοί σωστοί τρόποι για να λύσεις κάθε πρόκληση. Αν το δικό σου πρόγραμμα είναι διαφορετικό αλλά
+το ρομπότ κάνει αυτό που ζητήθηκε, \textbf{είναι κι αυτό σωστό!} Για να χωράνε, γράφουμε μόνο ό,τι μπαίνει
+ανάμεσα στο \code{start();} και στο \code{end();}, εκτός αν χρειάζεται κάτι πάνω από το \code{main}.
+
+\Needspace*{16\baselineskip}
+\subsection*{Πρόκληση 1: το πρώτο μου πρόγραμμα}
+\Needspace*{13\baselineskip}
+\begin{lstlisting}
+#include "schoolkits.h"
+
+int main(void)
+{
+    start();
+    on(OUT1);        // άναψε
+    delay(2000);     // περίμενε 2 δευτερόλεπτα
+    off(OUT1);       // σβήσε
+    end();
+    return 0;
+}
+\end{lstlisting}
+
+\Needspace*{8\baselineskip}
+\subsection*{Πρόκληση 2: μεταβλητή για τον χρόνο}
+\begin{lstlisting}
+int xronos = 2000;   // άλλαξε μόνο αυτόν τον αριθμό
+wheel12(10, 10);
+delay(xronos);
+wheel12(0, 0);
+\end{lstlisting}
+
+\Needspace*{10\baselineskip}
+\subsection*{Πρόκληση 3: λογαριασμός}
+Το \code{3 * 600 / 2} κάνει πρώτα \code{3 * 600 = 1800} και μετά \code{1800 / 2 = 900}.
+\begin{lstlisting}
+int misos = 3 * 600 / 2;   // 900
+on(OUT1);
+delay(misos);              // 0,9 δευτερόλεπτα
+off(OUT1);
+\end{lstlisting}
+
+\Needspace*{12\baselineskip}
+\subsection*{Πρόκληση 4: \texttt{if} και \texttt{else}}
+\Needspace*{14\baselineskip}
+\begin{lstlisting}
+int taxytita = 12;         // δοκίμασε και με 5
+if (taxytita > 8)
+{
+    wheel12(taxytita, taxytita);
+    delay(1000);
+    wheel12(0, 0);
+}
+else
+{
+    on(OUT1);
+    delay(1000);
+}
+\end{lstlisting}
+
+\Needspace*{10\baselineskip}
+\subsection*{Πρόκληση 5: και οι δύο διακόπτες}
+\begin{lstlisting}
+while (1)
+{
+    if (IN1 && IN2)  on(OUT1);   // και οι δύο πατημένοι
+    else             off(OUT1);  // αλλιώς σβηστό
+}
+\end{lstlisting}
+
+\Needspace*{12\baselineskip}
+\subsection*{Πρόκληση 6: πέντε αναβοσβησίματα με \texttt{while}}
+\Needspace*{9\baselineskip}
+\begin{lstlisting}
+int fores = 0;
+while (fores < 5)
+{
+    ledonoff(OUT2, 200);
+    fores++;
+}
+voice(OUT3);
+\end{lstlisting}
+
+\Needspace*{10\baselineskip}
+\subsection*{Πρόκληση 7: επιβράδυνση με \texttt{for}}
+\begin{lstlisting}
+for (int s = 15; s >= 0; s--)   // η s πάει 15, 14, ..., 0
+{
+    wheel12(s, s);
+    delay(200);
+}
+\end{lstlisting}
+
+\Needspace*{12\baselineskip}
+\subsection*{Πρόκληση 8: \texttt{for} με \texttt{break}}
+\Needspace*{10\baselineskip}
+\begin{lstlisting}
+for (int i = 0; i < 20; i++)
+{
+    if (IN1)               // πατήθηκε ο διακόπτης;
+    {
+        break;             // σταμάτα νωρίτερα
+    }
+    ledonoff(OUT1, 200);
+}
+\end{lstlisting}
+
+\Needspace*{30\baselineskip}
+\subsection*{Πρόκληση 9: τετράγωνο με δικές μου εντολές}
+\Needspace*{29\baselineskip}
+\begin{lstlisting}
+#include "schoolkits.h"
+
+void mprosta(int xronos)
+{
+    wheel12(10, 10);
+    delay(xronos);
+    wheel12(0, 0);
+}
+
+void strofi(int xronos)
+{
+    wheel12(10, -10);      // στροφή επί τόπου
+    delay(xronos);
+    wheel12(0, 0);
+}
+
+int main(void)
+{
+    start();
+    for (int i = 0; i < 4; i++)   // 4 πλευρές
+    {
+        mprosta(1500);
+        strofi(600);       // άλλαξε το 600 μέχρι η στροφή να βγαίνει ίσια
+    }
+    end();
+    return 0;
+}
+\end{lstlisting}
+
+\end{document}

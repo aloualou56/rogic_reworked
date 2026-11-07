@@ -95,12 +95,12 @@ A **MOTOR LOCK** switch in the main window, also in Robot Setup. When it is ON, 
 ## Requirements
 
 - Windows with **.NET Framework 4.6.2** or newer.
-- **WinAVR-20100110** installed at `C:\WinAVR-20100110`, with its `bin` and `utils\bin` folders on `PATH`. Rogic calls `avr-gcc` and `avr-objcopy` to build the program.
+- **No separate compiler install.** The C compiler Rogic uses to build programs (avr-gcc 14.1.0, AVR-Binutils 2.42, AVR-LibC 2.2.0) is bundled in [Toolchain](Toolchain). If that folder is removed, Rogic falls back to any `avr-gcc` installed on the PC.
 - **CP210x USB-to-UART driver** for the robot's download cable. The driver is included in [Driver/CP210X](Driver/CP210X): use `Universal` on Windows 10/11 and `Origin` on older systems.
 
 ## Running
 
-Run `Rogic.exe` from this folder. The DLLs, `Lib/` and `RogicRes/` must stay next to it. UI languages: English, Korean, Chinese and Russian.
+Run `Rogic.exe` from this folder. The DLLs, `Lib/`, `RogicRes/` and `Toolchain/` must stay next to it. UI languages: English, Korean, Chinese and Russian.
 
 If Rogic crashes, the error details are written to `runtime_error.log` (or `startup_error.log`) next to `Rogic.exe`.
 
@@ -116,8 +116,10 @@ If Rogic crashes, the error details are written to `runtime_error.log` (or `star
 | `RogicRes/` | Cursors and icon |
 | `Driver/CP210X/` | USB serial driver for the download cable |
 | `msvcr100*.dll`, `shared32/64.dll` | Native runtime dependencies |
+| `Toolchain/` | Bundled avr-gcc compiler for the ATmega8. Licences are in `Toolchain/LICENSES`, sources are linked in `Toolchain/README_ROGIC.txt` |
+| `docs/odigos_schoolkits.pdf` | Guide to programming the kit in C with `schoolKits.h` (LaTeX source: `docs/odigos_schoolkits.tex`) |
 | `docs/screenshots/` | The screenshots in this README |
 
 ## Notes
 
-The repository holds only compiled binaries, not source code. The reworked parts live in `Rogic.exe`, `ChipsDialogue.dll`, `ClientArea.dll` and `FixedArea.dll`.
+The repository holds only compiled binaries, not source code. The reworked parts live in `Rogic.exe`, `ChipsDialogue.dll`, `ClientArea.dll`, `FixedArea.dll` and `ISPDownloader.dll`.
