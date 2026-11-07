@@ -66,7 +66,7 @@ Calibrate the robot once, and every drive chip uses the result.
   - **Full spin (sec)** is used by Steer.
   - **100 cm (sec)** is used by Drive Distance.
 - **Test spin** / **Test straight:** replace the current program with a single calibration chip (a 360° Steer or a 100 cm Drive Distance). Download it, watch where the robot stops, and adjust the timing until it's right.
-- The calibration is kept in undo/redo and in the crash-recovery autosave. It is **not** written to saved `.rpj` files, so set it again after reopening a project.
+- The calibration is saved in the project's `.rpj` file, and is also kept in undo/redo and in the crash-recovery autosave.
 
 ![The Setup menu with its Robot Setup entry](docs/screenshots/setup-menu.png)
 
@@ -80,7 +80,7 @@ Calibrate the robot once, and every drive chip uses the result.
 
 ### Motor lock
 
-A **MOTOR LOCK** switch in the main window, also in Robot Setup. When it is ON, every motor chip ends by setting both motors to 0 and holding for 0.5 s, so each move runs separately instead of blending into the next. Like the calibration, it isn't stored in `.rpj` files.
+A **MOTOR LOCK** switch in the main window, also in Robot Setup. When it is ON, every motor chip ends by setting both motors to 0 and holding for 0.5 s, so each move runs separately instead of blending into the next. If a motor chip has no time of its own and is followed by a Delay chip, the lock comes after that delay and stops only the motors the chip used. Like the calibration, the setting is saved in the `.rpj` file.
 
 ![The Motor lock switch, OFF and ON](docs/screenshots/motor-lock.png)
 
@@ -92,6 +92,45 @@ A **MOTOR LOCK** switch in the main window, also in Robot Setup. When it is ON, 
 - When a palette tab holds more chips than fit, it scrolls with the **mouse wheel**.
 - If a chip or dialog image is missing from the resources, Rogic draws a themed replacement instead of failing.
 
+### Greek chips and menus
+
+Rogic can show its chips in **Greek**: the chip labels on the palette and canvas, the chip dialogs, the palette tabs, the File/Mode/Setup menus, the code editor's messages and the download messages.
+
+- Greek is the default. Switch with **Setup ▸ Blocks in English (English)**, and back with **Setup ▸ Blocks in Greek (Ελληνικά)**. The change applies straight away, without a restart.
+- The choice is remembered between sessions (`HKCU\Software\Roborobo\Rogic`, value `ChipLanguage`).
+- The rest of the main window keeps Rogic's own UI language (English, Korean, Chinese or Russian).
+
+### From C code to blocks
+
+Students can write a program in C and turn it into chips.
+
+1. Open the **RogicEditor** and switch the list at the top left to code editing.
+2. Write the program with the kit's commands from `schoolKits.h`, such as `motor()`, `delay()`, servos, sensor inputs, `ledonoff()`, `setSegment()` and `sleep()`.
+3. Press **Convert**. Rogic first checks the code with the compiler, then builds the matching chips and loads them onto the canvas.
+
+Pressing **Download** in the editor does the same conversion first and then downloads the blocks to the robot.
+
+- **What converts:** variables, calculations, `if`/`else`, `while` and `for` loops (including `break`), `switch`/`case`, and your own functions.
+- **What doesn't:** arrays, pointers, structs, decimal numbers, text in quotes, `do … while` and `goto`.
+- **When code can't be converted,** a plain-language message says why (for example "In motor() the speed is 0 to 15." or "You probably meant == (two equals signs)…") and the editor jumps to that line.
+- The code editor no longer asks for the teacher code, and no chips are locked by default. **Setup ▸ Teacher unlock…** is still there.
+
+### Downloading
+
+- The download window's progress and error messages were Korean-only. They now show in English or Greek.
+- **Clearer error messages** cover these cases:
+  - no port found: check the USB cable
+  - port already in use by another program
+  - robot not responding: check that it is switched on
+  - robot didn't answer the start command: make sure nothing else, such as a Bluetooth module, is plugged into the controller's UART pins
+- The CP210x driver clean-up only removes Silicon Labs serial-driver entries (`silabser`/`silabenm`).
+
+### Fixes
+
+- Motor-chip times accept a comma as the decimal point (`1,5`). They must be between 0 and 25 seconds, and a wrong value gets a clear message.
+- The Color, Contact, IR and Remote dialogs no longer show doubled "Port"/"Color" labels, and the If/Else dialog's labels were rearranged.
+- The Start chip and the **Chips2** palette button are drawn from the theme art, so their labels follow the chosen language.
+
 ## Requirements
 
 - Windows with **.NET Framework 4.6.2** or newer.
@@ -100,7 +139,7 @@ A **MOTOR LOCK** switch in the main window, also in Robot Setup. When it is ON, 
 
 ## Running
 
-Run `Rogic.exe` from this folder. The DLLs, `Lib/`, `RogicRes/` and `Toolchain/` must stay next to it. UI languages: English, Korean, Chinese and Russian.
+Run `Rogic.exe` from this folder. The DLLs, `Lib/`, `RogicRes/` and `Toolchain/` must stay next to it. Main window languages: English, Korean, Chinese and Russian. Chips, chip dialogs, menus and download messages: Greek (default) or English.
 
 If Rogic crashes, the error details are written to `runtime_error.log` (or `startup_error.log`) next to `Rogic.exe`.
 
