@@ -100,6 +100,49 @@ Rogic can show its chips in **Greek**: the chip labels on the palette and canvas
 - The choice is remembered between sessions (`HKCU\Software\Roborobo\Rogic`, value `ChipLanguage`).
 - The rest of the main window keeps Rogic's own UI language (English, Korean, Chinese or Russian).
 
+### C code editor
+
+The **RogicEditor**, where students write C, was rebuilt on the Scintilla editing engine (the one Notepad++ uses).
+
+![The C editor with autocomplete](docs/screenshots/c-editor.png)
+
+- **Reading the code:**
+  - line numbers, a highlighted current line and the Consolas font
+  - colors for C keywords, the kit's functions (`motor1`, `delay`, …) and the kit's names (`OUT1`, `IN1`, `REMOCON1`, …)
+  - correct colors for `//` and `/* */` comments and for strings
+  - `{ }` blocks can be folded with the −/+ in the margin
+  - Ctrl+mouse wheel zooms, and Ctrl+0 resets the zoom
+- **Brackets:**
+  - the bracket matching the one at the cursor lights up, and a bracket with no partner turns red
+  - typing `(`, `[`, `{`, `"` or `'` adds the closing one
+  - typing the closing one when it is already there just steps over it
+  - Backspace in an empty pair deletes both
+- **Indentation:**
+  - Enter keeps the indent, and goes one level deeper after `{`
+  - Enter between `{` and `}` puts the `}` on its own line
+  - a `}` typed on an empty line moves back one level
+  - Tab and Shift+Tab indent or outdent the selected lines
+- **Help while typing:**
+  - autocomplete for the kit's functions and C keywords, with the same rules as before
+  - typing `(` after a kit function shows how to call it, for example `void motor1(signed char mtSpd);`
+- **Shortcuts:**
+
+  | Keys | Action |
+  | --- | --- |
+  | Ctrl+F | Find (the bar marks every match) |
+  | Ctrl+H | Find and replace (Replace all is one undo step) |
+  | F3 / Shift+F3 | Next / previous match |
+  | Ctrl+G | Go to line |
+  | Ctrl+/ | Comment or uncomment the selected lines |
+  | Ctrl+D | Duplicate the line |
+  | Ctrl+Z / Ctrl+Y | Undo / redo |
+  | F7 / F8 | Build / Download, as before |
+
+- **Viewer mode** (the code of the blocks on the canvas) stays read-only and gray. When it refreshes, Ctrl+Z can't bring back an older program.
+- **Unchanged:** Build, **Download** (check → blocks → download to the robot) and **Change to blocks**.
+
+![Find bar in the C editor](docs/screenshots/c-editor-find.png)
+
 ### From C code to blocks
 
 Students can write a program in C and turn it into chips.
@@ -149,6 +192,7 @@ If Rogic crashes, the error details are written to `runtime_error.log` (or `star
 | --- | --- |
 | `Rogic.exe` | Main application |
 | `ChipsDialogue.dll`, `ClientArea.dll`, `FixedArea.dll`, … | UI, chip dialogs, palette and canvas |
+| `ScintillaNET.dll` | Editing control of the C editor ([ScintillaNET](https://github.com/jacobslusser/ScintillaNET) 3.6.3, MIT; Scintilla licence). Licences in `LICENSES/`. A copy is also built into `Rogic.exe`, so Rogic still starts if this file is missing |
 | `ISPDownloader.dll`, `STK500.dll` | Program download to the controller |
 | `Bluetooth/` | Bluetooth module setup (master/slave pairing) |
 | `Lib/` | AVR libraries and headers linked into every program (`libm8Api.a`, `libKitMD2013.a`, `schoolKits.h`) |
@@ -158,6 +202,7 @@ If Rogic crashes, the error details are written to `runtime_error.log` (or `star
 | `Toolchain/` | Bundled avr-gcc compiler for the ATmega8. Licences are in `Toolchain/LICENSES`, sources are linked in `Toolchain/README_ROGIC.txt` |
 | `docs/odigos_schoolkits.pdf` | Guide to programming the kit in C with `schoolKits.h` (LaTeX source: `docs/odigos_schoolkits.tex`) |
 | `docs/screenshots/` | The screenshots in this README |
+| `LICENSES/` | Licences of ScintillaNET and Scintilla, used by the C editor |
 
 ## Notes
 
